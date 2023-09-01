@@ -12,6 +12,10 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
+set(CMAKE_C_COMPILER "/home/yuanshaobai/tools/llvm16/llvm-project-main/build/bin/clang")
+set(CMAKE_CXX_COMPILER "/home/yuanshaobai/tools/llvm16/llvm-project-main/build/bin/clang++")
+set(LLVM_DIR /home/yuanshaobai/tools/llvm16/llvm-project-main/build/lib/cmake/llvm)
+
 if (MSVC)
   set(CMAKE_CXX_FLAGS                "/GL /EHsc /W2 ${CMAKE_CXX_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEBUG          "/Od /Zi ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -21,7 +25,7 @@ if (MSVC)
 else()
   set(CMAKE_CXX_FLAGS                "-Wall -Werror -fPIC -fstrict-enums ${CMAKE_CXX_FLAGS}")
   set(CMAKE_CXX_FLAGS_DEBUG          "-g -Og ${CMAKE_CXX_FLAGS_DEBUG}")
-  set(CMAKE_CXX_FLAGS_RELEASE        "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_CXX_FLAGS_RELEASE        "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -g ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 endif()
 
@@ -73,7 +77,9 @@ find_package(ZLIB)
 find_package(Z3 4.8.5 REQUIRED)
 include_directories(${Z3_INCLUDE_DIR})
 
-find_program(RE2C re2c)
+set(RE2C_EXECUTABLE "/home/yuanshaobai/tools/re2c/re2c/.build/re2c")
+
+find_program(RE2C ${RE2C_EXECUTABLE} PATHS "/home/yuanshaobai/tools/re2c/re2c/.build/re2c")
 if (RE2C)
   message(STATUS "RE2C: ${RE2C}")
 else()
@@ -163,7 +169,7 @@ endif()
 
 
 if (BUILD_LLVM_UTILS OR BUILD_TV)
-  find_package(LLVM REQUIRED CONFIG)
+   find_package(LLVM REQUIRED CONFIG)
 
   message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
   message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
@@ -244,7 +250,6 @@ target_link_libraries(alive PRIVATE ${ALIVE_LIBS})
 add_executable(alive-jobserver
                "tools/alive-jobserver.cpp"
               )
-install(TARGETS alive alive-jobserver)
 
 #add_library(alive2 SHARED ${IR_SRCS} ${SMT_SRCS} ${TOOLS_SRCS} ${UTIL_SRCS} ${LLVM_UTIL_SRCS})
 
@@ -254,7 +259,6 @@ if (BUILD_LLVM_UTILS OR BUILD_TV)
   target_link_libraries(alive-tv PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
   target_link_libraries(quick-fuzz PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
   target_link_libraries(alive-exec PRIVATE ${ALIVE_LIBS_LLVM} ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES} ${llvm_libs})
-  install(TARGETS alive-tv quick-fuzz alive-exec)
 endif()
 
 target_link_libraries(alive PRIVATE ${Z3_LIBRARIES} ${HIREDIS_LIBRARIES})
